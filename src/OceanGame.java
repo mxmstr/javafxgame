@@ -25,6 +25,8 @@ public class OceanGame extends Application {
 	OceanMap map;
 	Stage stage;
 	Player playerShip;
+	ArrayList<EntityObserver> entities;
+	ArrayList<EntityObservable> treasures;
 	
 
 	@Override
@@ -51,7 +53,11 @@ public class OceanGame extends Application {
 		
 		
 		// Setup gameplay
+		entities = new ArrayList<EntityObserver>();
+		treasures = new ArrayList<EntityObservable>();
+		
 		addPlayer();
+		addPirates(3);
 		setGameUpdate();
 		setKeys();
 		
@@ -59,7 +65,7 @@ public class OceanGame extends Application {
 
 	private void addPlayer() {
 		
-		playerShip = new Player(loadImage("ship.png", map.cellSize, map.cellSize));
+		playerShip = new Player(loadImage("ship.png", OceanMap.getCellSize(), OceanMap.getCellSize()));
 		
 	}
 	
@@ -67,14 +73,33 @@ public class OceanGame extends Application {
 		
 		Image shipImage = new Image(path, sizeX, sizeY, true, true);
 		ImageView imageView = new ImageView(shipImage);
-		imageView.setX(0 * map.cellSize);
-		imageView.setY(0 * map.cellSize);
+		imageView.setX(0 * OceanMap.getCellSize());
+		imageView.setY(0 * OceanMap.getCellSize());
 		map.addChild(imageView);
 		
 		return imageView;
 		
 	}
 
+	
+	private void addPirates(int count) {
+		
+		Random rand = new Random();
+		
+		for (int i=0; i < count; i++) {
+			Pirate p = new Pirate(
+					loadImage("pirateShip.png", OceanMap.getCellSize(), OceanMap.getCellSize()), 
+					loadImage("arrow.png", OceanMap.getCellSize(), OceanMap.getCellSize()));
+			int range = OceanMap.getDimensions();
+			int[] pos = {
+					rand.nextInt(range),
+					rand.nextInt(range)};
+			p.setPosition(pos);
+			playerShip.addObserver((EntityObserver)p);
+			entities.add(p);
+		}
+		
+	}
 	
 	
 	public void setGameUpdate() {
@@ -85,17 +110,21 @@ public class OceanGame extends Application {
 	    	
 	        public void handle(long currentNanoTime)
 	        {
-	        	double t;
 	        	
 				
-				t = (currentNanoTime - playerShip.lastUpdate);
-				
-				if (t >= playerShip.rate) {
-					// Process Player input
-					playerShip.moveToInput();
-					playerShip.lastUpdate = currentNanoTime;
-                }
+				playerShip.update(currentNanoTime);
 					
+				
+				Iterator<EntityObserver> iter = entities.iterator();
+				while(iter.hasNext()) {
+					EntityObserver entity = iter.next();
+					entity.update(currentNanoTime);
+					
+					if (entity.hasCaughtPlayer()) {
+						stop();
+						return;
+					}
+				}
 				
 	        }
 	    }.start();

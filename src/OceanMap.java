@@ -11,10 +11,10 @@ import javafx.scene.shape.Rectangle;
 public class OceanMap {
 
 	static OceanMap instance;
-	public Pane p;
-	public Scene scene;
-	public final int dimensions = 10;
-	public final int cellSize = 50;
+	Pane p;
+	Scene scene;
+	final static int dimensions = 15;
+	final static int cellSize = 50;
 	private int[][] grid;
 	private ArrayList<Line> lines = new ArrayList<Line>();
 	
@@ -42,6 +42,18 @@ public class OceanMap {
 			instance = new OceanMap();
 		
 		return instance;
+	      
+	}
+	
+	public static int getCellSize() {
+		
+		return cellSize;
+	      
+	}
+	
+	public static int getDimensions() {
+		
+		return dimensions;
 	      
 	}
 	
@@ -94,10 +106,18 @@ public class OceanMap {
     	}
 		
 	}
-	
-	public ArrayList<Line> getLines() {
-		return lines;
-	}
 
+	public boolean cellOpen(int[] pos) {
+		
+		if (pos[0] < 0 || pos[0] > dimensions - 1 || pos[1] < 0 || pos[1] > dimensions - 1)
+			return false;
+		
+		if (grid[pos[0]][pos[1]] > 0)
+			return false;
+		
+		return true;
+		
+	}
+	
 	
 }
